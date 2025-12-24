@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,6 +88,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException e) {
+        logger.warn("Access denied: {}", e.getReason());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("Status", e.getStatusCode().value());
+        body.put("Message", e.getReason());
+
+        return ResponseEntity.status(e.getStatusCode()).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneralException(Exception e) {
         logger.error("Unexpected error occurred: ", e);
@@ -95,6 +107,7 @@ public class GlobalExceptionHandler {
         body.put("Status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("Message", "An unexpected error occurred");
         body.put("Details", e.getMessage());
+        body.put("Error", e.getClass().getSimpleName());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
