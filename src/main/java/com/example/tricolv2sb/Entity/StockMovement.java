@@ -3,14 +3,19 @@ package com.example.tricolv2sb.Entity;
 import com.example.tricolv2sb.Entity.Enum.StockMovementType;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "stock_movements")
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"product", "stockLot", "goodsIssueLine", "purchasseOrderLine"})
 public class StockMovement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
     
     @Column(nullable = false)
