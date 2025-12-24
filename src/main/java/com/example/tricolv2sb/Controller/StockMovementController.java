@@ -1,6 +1,8 @@
 package com.example.tricolv2sb.Controller;
 
 import com.example.tricolv2sb.DTO.ReadStockMovementDTO;
+import com.example.tricolv2sb.Entity.Permission;
+import com.example.tricolv2sb.Security.RequirePermission;
 import com.example.tricolv2sb.Service.StockMovementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ public class StockMovementController {
      * Gets a list of all stock movements
      */
     @GetMapping
+    @RequirePermission(Permission.STOCK_HISTORY)
     public ResponseEntity<List<ReadStockMovementDTO>> getAllStockMovements() {
         List<ReadStockMovementDTO> movements = stockMovementService.fetchAllStockMovements();
         return ResponseEntity.ok(movements);
@@ -31,6 +34,7 @@ public class StockMovementController {
      * Gets a single stock movement by its ID
      */
     @GetMapping("/{id}")
+    @RequirePermission(Permission.STOCK_HISTORY)
     public ResponseEntity<ReadStockMovementDTO> getStockMovementById(@PathVariable Long id) {
         return stockMovementService.fetchStockMovementById(id)
                 .map(ResponseEntity::ok)
@@ -42,6 +46,7 @@ public class StockMovementController {
      * Gets all stock movements for a specific product
      */
     @GetMapping("/product/{productId}")
+    @RequirePermission(Permission.STOCK_HISTORY)
     public ResponseEntity<List<ReadStockMovementDTO>> getStockMovementsByProduct(@PathVariable Long productId) {
         List<ReadStockMovementDTO> movements = stockMovementService.fetchStockMovementsByProduct(productId);
         return ResponseEntity.ok(movements);

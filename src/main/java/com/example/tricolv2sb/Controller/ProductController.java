@@ -5,6 +5,8 @@ import com.example.tricolv2sb.DTO.CreateProductDTO;
 import com.example.tricolv2sb.DTO.ProductStockDetailDTO;
 import com.example.tricolv2sb.DTO.ReadProductDTO;
 import com.example.tricolv2sb.DTO.UpdateProductDTO;
+import com.example.tricolv2sb.Entity.Permission;
+import com.example.tricolv2sb.Security.RequirePermission;
 import com.example.tricolv2sb.Service.ProductService;
 import com.example.tricolv2sb.Service.StockService;
 import lombok.RequiredArgsConstructor;
@@ -24,36 +26,42 @@ public class ProductController implements ProductControllerInterface {
     private final StockService stockService;
 
     @Override
+    @RequirePermission(Permission.PRODUCT_READ)
     public ResponseEntity<List<ReadProductDTO>> getAllProducts() {
         List<ReadProductDTO> products = productService.getAllProducts();
         return ResponseEntity.ok(products);
     }
 
     @Override
+    @RequirePermission(Permission.PRODUCT_READ)
     public ResponseEntity<ReadProductDTO> getProductById(Long id) {
         ReadProductDTO product = productService.getProductById(id);
         return ResponseEntity.ok(product);
     }
 
     @Override
+    @RequirePermission(Permission.PRODUCT_CREATE)
     public ResponseEntity<ReadProductDTO> createProduct(@Valid CreateProductDTO createProductDTO) {
         ReadProductDTO createdProduct = productService.createProduct(createProductDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
     @Override
+    @RequirePermission(Permission.PRODUCT_CREATE)
     public ResponseEntity<ReadProductDTO> updateProduct(Long id, @Valid UpdateProductDTO updateProductDTO) {
         ReadProductDTO updatedProduct = productService.updateProduct(id, updateProductDTO);
         return ResponseEntity.ok(updatedProduct);
     }
 
     @Override
+    @RequirePermission(Permission.PRODUCT_CREATE)
     public ResponseEntity<Void> deleteProduct(Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/stock")
+    @RequirePermission(Permission.STOCK_READ)
     public ResponseEntity<ProductStockDetailDTO> getProductStock(@PathVariable Long id) {
         ProductStockDetailDTO stock = stockService.getProductStockDetail(id);
         return ResponseEntity.ok(stock);

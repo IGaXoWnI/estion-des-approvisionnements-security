@@ -2,6 +2,8 @@ package com.example.tricolv2sb.Controller;
 
 import com.example.tricolv2sb.DTO.CreateSupplierDTO;
 import com.example.tricolv2sb.DTO.ReadSupplierDTO;
+import com.example.tricolv2sb.Entity.Permission;
+import com.example.tricolv2sb.Security.RequirePermission;
 import com.example.tricolv2sb.Service.ServiceInterfaces.SupplierServiceInterface;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class SupplierController {
      * Gets a list of all suppliers.
      */
     @GetMapping
+    @RequirePermission(Permission.SUPPLIER_READ)
     public ResponseEntity<List<ReadSupplierDTO>> getAllSuppliers() {
         List<ReadSupplierDTO> suppliers = supplierService.fetchAllSuppliers();
         return ResponseEntity.ok(suppliers);
@@ -33,6 +36,7 @@ public class SupplierController {
      * Creates a new supplier.
      */
     @PostMapping
+    @RequirePermission(Permission.SUPPLIER_CREATE)
     public ResponseEntity<ReadSupplierDTO> createSupplier(@Valid @RequestBody CreateSupplierDTO dto) {
         ReadSupplierDTO newSupplier = supplierService.addSupplier(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(newSupplier);
@@ -43,6 +47,7 @@ public class SupplierController {
      * Gets a single supplier by their ID.
      */
     @GetMapping("/{id}")
+    @RequirePermission(Permission.SUPPLIER_READ)
     public ResponseEntity<ReadSupplierDTO> getSupplierById(@PathVariable Long id) {
         return supplierService.fetchSupplier(id)
                 .map(supplierDTO -> ResponseEntity.ok().body(supplierDTO))
@@ -54,6 +59,7 @@ public class SupplierController {
      * Updates an existing supplier.
      */
     @PutMapping("/{id}")
+    @RequirePermission(Permission.SUPPLIER_CREATE)
     public ResponseEntity<ReadSupplierDTO> updateSupplier(@PathVariable Long id,
             @Valid @RequestBody CreateSupplierDTO dto) {
         ReadSupplierDTO updatedSupplier = supplierService.updateSupplier(id, dto);
@@ -65,6 +71,7 @@ public class SupplierController {
      * Deletes a supplier by their ID.
      */
     @DeleteMapping("/{id}")
+    @RequirePermission(Permission.SUPPLIER_CREATE)
     public ResponseEntity<Void> deleteSupplier(@PathVariable Long id) {
         supplierService.deleteSupplier(id);
         return ResponseEntity.noContent().build();

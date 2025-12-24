@@ -11,6 +11,8 @@ import com.example.tricolv2sb.Exception.ProductNotFoundException;
 import com.example.tricolv2sb.Mapper.GoodsIssueMapper;
 import com.example.tricolv2sb.Repository.*;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class GoodsIssueService {
+
+    private static final Logger logger = LoggerFactory.getLogger(GoodsIssueService.class);
 
     private final GoodsIssueRepository goodsIssueRepository;
     private final GoodsIssueLineRepository goodsIssueLineRepository;
@@ -51,28 +55,51 @@ public class GoodsIssueService {
 
     @Transactional
     public ReadGoodsIssueDTO createGoodsIssue(CreateGoodsIssueDTO dto) {
-        GoodsIssue goodsIssue = goodsIssueMapper.toEntity(dto);
+        try {
+            logger.info("Creating goods issue with destination: {}, motif: {}, issueDate: {}", 
+                       dto.getDestination(), dto.getMotif(), dto.getIssueDate());
+            
+            GoodsIssue goodsIssue = goodsIssueMapper.toEntity(dto);
+            logger.debug("Mapped DTO to entity: {}", goodsIssue);
 
-        String issueNumber = generateIssueNumber();
-        goodsIssue.setIssueNumber(issueNumber);
-        goodsIssue.setStatus(GoodsIssueStatus.DRAFT);
+            String issueNumber = generateIssueNumber();
+            goodsIssue.setIssueNumber(issueNumber);
+            goodsIssue.setStatus(GoodsIssueStatus.DRAFT);
+            logger.debug("Set issue number: {} and status: DRAFT", issueNumber);
 
-        List<GoodsIssueLine> issueLines = new ArrayList<>();
-        for (var lineDto : dto.getIssueLines()) {
-            Product product = productRepository.findById(lineDto.getProductId())
-                    .orElseThrow(() -> new ProductNotFoundException(
-                            "Product with ID " + lineDto.getProductId() + " not found"));
+            // Save the goods issue first to get the ID
+            GoodsIssue savedGoodsIssue = goodsIssueRepository.save(goodsIssue);
+            logger.debug("Saved goods issue with ID: {}", savedGoodsIssue.getId());
 
-            GoodsIssueLine line = new GoodsIssueLine();
-            line.setProduct(product);
-            line.setQuantity(lineDto.getQuantity());
-            line.setGoodsIssue(goodsIssue);
-            issueLines.add(line);
+            // Create and save issue lines
+            logger.info("Processing {} issue lines", dto.getIssueLines().size());
+            for (var lineDto : dto.getIssueLines()) {
+                logger.debug("Processing line for product ID: {}, quantity: {}", 
+                           lineDto.getProductId(), lineDto.getQuantity());
+                
+                Product product = productRepository.findById(lineDto.getProductId())
+                        .orElseThrow(() -> new ProductNotFoundException(
+                                "Product with ID " + lineDto.getProductId() + " not found"));
+                logger.debug("Found product: {}", product.getName());
+
+                GoodsIssueLine line = new GoodsIssueLine();
+                line.setProduct(product);
+                line.setQuantity(lineDto.getQuantity());
+                line.setGoodsIssue(savedGoodsIssue);
+                
+                savedGoodsIssue.getIssueLines().add(line);
+                logger.debug("Added issue line to goods issue");
+            }
+
+            // Save again with the lines
+            savedGoodsIssue = goodsIssueRepository.save(savedGoodsIssue);
+            logger.info("Successfully created goods issue with ID: {}", savedGoodsIssue.getId());
+            
+            return goodsIssueMapper.toDto(savedGoodsIssue);
+        } catch (Exception e) {
+            logger.error("Failed to create goods issue: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create goods issue: " + e.getMessage(), e);
         }
-
-        goodsIssue.setIssueLines(new HashSet<>(issueLines));
-        GoodsIssue savedGoodsIssue = goodsIssueRepository.save(goodsIssue);
-        return goodsIssueMapper.toDto(savedGoodsIssue);
     }
 
     @Transactional

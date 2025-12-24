@@ -3,6 +3,8 @@ package com.example.tricolv2sb.Controller;
 import com.example.tricolv2sb.DTO.CreateGoodsIssueDTO;
 import com.example.tricolv2sb.DTO.ReadGoodsIssueDTO;
 import com.example.tricolv2sb.DTO.UpdateGoodsIssueDTO;
+import com.example.tricolv2sb.Entity.Permission;
+import com.example.tricolv2sb.Security.RequirePermission;
 import com.example.tricolv2sb.Service.GoodsIssueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class GoodsIssueController {
      * Gets a list of all goods issues
      */
     @GetMapping
+    @RequirePermission(Permission.EXIT_SLIP_READ)
     public ResponseEntity<List<ReadGoodsIssueDTO>> getAllGoodsIssues() {
         List<ReadGoodsIssueDTO> goodsIssues = goodsIssueService.fetchAllGoodsIssues();
         return ResponseEntity.ok(goodsIssues);
@@ -34,6 +37,7 @@ public class GoodsIssueController {
      * Gets a single goods issue by its ID
      */
     @GetMapping("/{id}")
+    @RequirePermission(Permission.EXIT_SLIP_READ)
     public ResponseEntity<ReadGoodsIssueDTO> getGoodsIssueById(@PathVariable Long id) {
         return goodsIssueService.fetchGoodsIssueById(id)
                 .map(ResponseEntity::ok)
@@ -45,6 +49,7 @@ public class GoodsIssueController {
      * Creates a new goods issue (status: DRAFT)
      */
     @PostMapping
+    @RequirePermission(Permission.EXIT_SLIP_CREATE)
     public ResponseEntity<ReadGoodsIssueDTO> createGoodsIssue(@Valid @RequestBody CreateGoodsIssueDTO dto) {
         ReadGoodsIssueDTO newGoodsIssue = goodsIssueService.createGoodsIssue(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(newGoodsIssue);
@@ -55,6 +60,7 @@ public class GoodsIssueController {
      * Updates an existing goods issue (only if status is DRAFT)
      */
     @PutMapping("/{id}")
+    @RequirePermission(Permission.EXIT_SLIP_CREATE)
     public ResponseEntity<ReadGoodsIssueDTO> updateGoodsIssue(
             @PathVariable Long id,
             @Valid @RequestBody UpdateGoodsIssueDTO dto) {
@@ -67,6 +73,7 @@ public class GoodsIssueController {
      * Deletes a goods issue (only if status is DRAFT)
      */
     @DeleteMapping("/{id}")
+    @RequirePermission(Permission.EXIT_SLIP_CREATE)
     public ResponseEntity<Void> deleteGoodsIssue(@PathVariable Long id) {
         goodsIssueService.deleteGoodsIssue(id);
         return ResponseEntity.noContent().build();
@@ -77,6 +84,7 @@ public class GoodsIssueController {
      * Validates a goods issue and creates stock movements OUT
      */
     @PutMapping("/{id}/validate")
+    @RequirePermission(Permission.EXIT_SLIP_VALIDATE)
     public ResponseEntity<String> validateGoodsIssue(@PathVariable Long id) {
         goodsIssueService.validateGoodsIssue(id);
         return ResponseEntity.ok("Goods issue " + id + " has been validated");
@@ -87,6 +95,7 @@ public class GoodsIssueController {
      * Cancels a goods issue
      */
     @PutMapping("/{id}/cancel")
+    @RequirePermission(Permission.EXIT_SLIP_CANCEL)
     public ResponseEntity<String> cancelGoodsIssue(@PathVariable Long id) {
         goodsIssueService.cancelGoodsIssue(id);
         return ResponseEntity.ok("Goods issue " + id + " has been cancelled");

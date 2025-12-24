@@ -3,6 +3,8 @@ package com.example.tricolv2sb.Controller;
 import com.example.tricolv2sb.DTO.CreatePurchaseOrderLineDTO;
 import com.example.tricolv2sb.DTO.ReadPurchaseOrderLineDTO;
 import com.example.tricolv2sb.DTO.UpdatePurchaseOrderLineDTO;
+import com.example.tricolv2sb.Entity.Permission;
+import com.example.tricolv2sb.Security.RequirePermission;
 import com.example.tricolv2sb.Service.PurchaseOrderLineService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class PurchaseOrderLineController {
      * Gets a list of all purchase order lines.
      */
     @GetMapping
+    @RequirePermission(Permission.ORDER_READ)
     public ResponseEntity<List<ReadPurchaseOrderLineDTO>> getAllPurchaseOrderLines() {
         List<ReadPurchaseOrderLineDTO> orderLines = purchaseOrderLineService.fetchAllPurchaseOrderLines();
         return ResponseEntity.ok(orderLines);
@@ -34,6 +37,7 @@ public class PurchaseOrderLineController {
      * Gets a single purchase order line by its ID.
      */
     @GetMapping("/{id}")
+    @RequirePermission(Permission.ORDER_READ)
     public ResponseEntity<ReadPurchaseOrderLineDTO> getPurchaseOrderLineById(@PathVariable Long id) {
         return purchaseOrderLineService.fetchPurchaseOrderLineById(id)
                 .map(ResponseEntity::ok)
@@ -45,6 +49,7 @@ public class PurchaseOrderLineController {
      * Creates a new purchase order line.
      */
     @PostMapping
+    @RequirePermission(Permission.ORDER_CREATE)
     public ResponseEntity<ReadPurchaseOrderLineDTO> createPurchaseOrderLine(
             @Valid @RequestBody CreatePurchaseOrderLineDTO dto) {
         ReadPurchaseOrderLineDTO newOrderLine = purchaseOrderLineService.createPurchaseOrderLine(dto);
@@ -56,6 +61,7 @@ public class PurchaseOrderLineController {
      * Updates an existing purchase order line.
      */
     @PutMapping("/{id}")
+    @RequirePermission(Permission.ORDER_CREATE)
     public ResponseEntity<ReadPurchaseOrderLineDTO> updatePurchaseOrderLine(
             @PathVariable Long id,
             @Valid @RequestBody UpdatePurchaseOrderLineDTO dto) {
@@ -68,6 +74,7 @@ public class PurchaseOrderLineController {
      * Deletes a purchase order line by its ID.
      */
     @DeleteMapping("/{id}")
+    @RequirePermission(Permission.ORDER_CREATE)
     public ResponseEntity<Void> deletePurchaseOrderLine(@PathVariable Long id) {
         purchaseOrderLineService.deletePurchaseOrderLine(id);
         return ResponseEntity.noContent().build();
