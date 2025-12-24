@@ -8,3 +8,4 @@
 --include file:tables/006-create-purchase-order-lines-table.sql
 --include file:tables/007-create-stock-lots-table.sql
 --include file:tables/008-create-stock-movements-table.sql
+--include file:tables/009-create-users-table.sql
