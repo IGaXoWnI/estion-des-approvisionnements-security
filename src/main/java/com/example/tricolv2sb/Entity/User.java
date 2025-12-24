@@ -7,8 +7,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -37,18 +37,41 @@ public class User implements UserDetails {
     @Column(nullable = true)
     private Role role;
 
+    @ElementCollection(targetClass = Permission.class, fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "user_permissions", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "permission")
+    private Set<Permission> individualPermissions = new HashSet<>();
+
     @Column(nullable = false)
     private Boolean enabled = true;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    public Set<Permission> getAllPermissions() {
+        Set<Permission> allPermissions = new HashSet<>();
+        if (role != null) {
+            allPermissions.addAll(role.getPermissions());
+        }
+        allPermissions.addAll(individualPermissions);
+        return allPermissions;
+    }
+
+    public boolean hasPermission(Permission permission) {
+        return getAllPermissions().contains(permission);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (role == null) {
-            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        if (role != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
         }
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        authorities.addAll(getAllPermissions().stream()
+            .map(permission -> new SimpleGrantedAuthority("PERMISSION_" + permission.name()))
+            .collect(Collectors.toSet()));
+        return authorities;
     }
 
     @Override

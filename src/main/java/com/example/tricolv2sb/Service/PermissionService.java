@@ -17,7 +17,7 @@ public class PermissionService {
         }
         
         User user = (User) authentication.getPrincipal();
-        return user.getRole() != null && user.getRole().hasPermission(permission);
+        return user.hasPermission(permission);
     }
     
     public User getCurrentUser() {

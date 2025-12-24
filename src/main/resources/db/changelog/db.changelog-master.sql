@@ -9,3 +9,4 @@
 --include file:tables/007-create-stock-lots-table.sql
 --include file:tables/008-create-stock-movements-table.sql
 --include file:tables/009-create-users-table.sql
+--include file:tables/010-create-user-permissions-table.sql
