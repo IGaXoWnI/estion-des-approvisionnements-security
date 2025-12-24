@@ -1,0 +1,11 @@
+{
+  "destination": "Atelier Production",
+  "motif": "PRODUCTION",
+  "issueDate": "2024-12-24",
+  "issueLines": [
+    {
+      "productId": 1,
+      "quantity": 10.0
+    }
+  ]
+}
